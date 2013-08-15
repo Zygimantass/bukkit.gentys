@@ -56,7 +56,6 @@ public class Gentys extends JavaPlugin implements Listener{
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		Player player = (Player) sender;
 		PluginDescriptionFile pdfFile = this.getDescription();
-		ChatColor darkred = dred;
 		if(commandLabel.equalsIgnoreCase("gentys")){
 			if(args.length < 1)
 			{
@@ -117,7 +116,7 @@ public class Gentys extends JavaPlugin implements Listener{
 				}
 				else if (args[0].equalsIgnoreCase("help"))
 				{
-					player.sendMessage(dred + "====" + dgreen + " Gentys version " + pdfFile.getVersion() + " " + dred + "====");
+					getHelp(player);
 				}
 				else if (args[0].equalsIgnoreCase("list"))
 				{
