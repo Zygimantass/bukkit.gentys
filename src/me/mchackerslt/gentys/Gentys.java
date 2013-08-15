@@ -29,27 +29,38 @@ public class Gentys extends JavaPlugin implements Listener{
 	private final Logger logger = Logger.getLogger("Minecraft");
 	public static Gentys plugin;
 	private Menu menu;
+	public static ChatColor dred = ChatColor.DARK_RED;
+	public static ChatColor red = ChatColor.RED;
+	public static ChatColor dgreen = ChatColor.DARK_GREEN;
+	public static ChatColor green = ChatColor.GREEN;
+	public static ChatColor white = ChatColor.WHITE;
+	public PluginDescriptionFile pdfFile = this.getDescription();
 	
 	public void onDisable() {
-		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName() + " has been disabled.");
 	}
 	public void onEnable() {
-		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName() + " has been enabled.");
 		menu = new Menu(this);
 		getServer().getPluginManager().registerEvents(this, this);
+	}
+	public void getHelp(Player p)
+	{
+		p.sendMessage(dred + "====" + dgreen + " Gentys version " + pdfFile.getVersion() + dred + "====");
+		p.sendMessage(dred + "/gentys: " + dgreen + "Rodo sita teksta");
+		p.sendMessage(dred + "/gentys help: " + dgreen + "Rodo sita teksta");
+		p.sendMessage(dred + "/gentys list: " + dgreen + "Parodo kokios gentys egzistuoja");
+		p.sendMessage(dred + "/gentys join: " + dgreen + "Su sia komanda gali pasirinkti genti. (Atsimink, genties pakeisti nebegalesi.)");
 	}
 	@SuppressWarnings("resource")
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		Player player = (Player) sender;
 		PluginDescriptionFile pdfFile = this.getDescription();
-		ChatColor darkred = ChatColor.DARK_RED;
+		ChatColor darkred = dred;
 		if(commandLabel.equalsIgnoreCase("gentys")){
 			if(args.length < 1)
 			{
-				player.sendMessage(ChatColor.DARK_RED + "====" + ChatColor.DARK_GREEN + " Gentys version " + pdfFile.getVersion() + " " + ChatColor.DARK_RED + "====");
-				player.sendMessage(ChatColor.DARK_RED + "/gentys: " + "Rodo sita teksta.");
+				getHelp(player);
 			}
 			else
 			{
@@ -76,8 +87,7 @@ public class Gentys extends JavaPlugin implements Listener{
 					
 					if(args[1].equalsIgnoreCase("indenai"))
 					{
-						player.setHealth(20.0);
-						player.sendMessage(ChatColor.DARK_RED + "[Gentys]: Tu tapai indënø genties nariu.");
+						player.sendMessage(dred + "[Gentys]: Tu tapai indënø genties nariu.");
 					    File log = new File("/usr/1.6/plugins/Gentys/list.txt");
 					    try{
 					    	PrintWriter out = new PrintWriter(new FileWriter(log, true));
@@ -97,16 +107,17 @@ public class Gentys extends JavaPlugin implements Listener{
 					    }catch(IOException e){
 					        e.printStackTrace();
 					    }
-						player.sendMessage(ChatColor.GREEN + "[Gentys]: Tu tapai baltø genties nariu.");
+						player.sendMessage(green + "[Gentys]: Tu tapai baltø genties nariu.");
 					}
 					else
 					{
-						player.sendMessage(ChatColor.DARK_RED + "[Gentys]: Kad paþiurëtum kokios gentys egzistuoja, paraðyk komanda: /gentys list");
+						player.sendMessage(dred + "[Gentys]: Tinkamas komandos naudojimas: /gentys join gentis");
+						player.sendMessage(dred + "[Gentys]: Kad paþiurëtum kokios gentys egzistuoja, paraðyk komanda: /gentys list");
 					}
 				}
 				else if (args[0].equalsIgnoreCase("help"))
 				{
-					player.sendMessage(ChatColor.DARK_RED + "====" + ChatColor.DARK_GREEN + " Gentys version " + pdfFile.getVersion() + " " + ChatColor.DARK_RED + "====");
+					player.sendMessage(dred + "====" + dgreen + " Gentys version " + pdfFile.getVersion() + " " + dred + "====");
 				}
 				else if (args[0].equalsIgnoreCase("list"))
 				{
@@ -114,8 +125,7 @@ public class Gentys extends JavaPlugin implements Listener{
 				}
 				else
 				{
-					player.sendMessage(darkred + "====" + ChatColor.DARK_GREEN + " Gentys version " + pdfFile.getVersion() + "  " + ChatColor.DARK_RED + "====");
-					player.sendMessage(ChatColor.DARK_RED + "/gentys: " + "Rodo sita teksta.");
+					getHelp(player);
 				}
 			}
 		}
