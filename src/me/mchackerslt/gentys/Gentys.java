@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.permission.Permission;
+
 import org.bukkit.Achievement;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,6 +24,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @SuppressWarnings("unused")
@@ -34,16 +37,27 @@ public class Gentys extends JavaPlugin implements Listener{
 	public static ChatColor dgreen = ChatColor.DARK_GREEN;
 	public static ChatColor green = ChatColor.GREEN;
 	public static ChatColor white = ChatColor.WHITE;
+	public Permission perms;
 	public PluginDescriptionFile pdfFile = this.getDescription();
+	
 	
 	public void onDisable() {
 		this.logger.info(pdfFile.getName() + " has been disabled.");
 	}
 	public void onEnable() {
-		this.logger.info(pdfFile.getName() + " has been enabled.");
-		menu = new Menu(this);
+		//this.logger.info(pdfFile.getName() + " has been enabled.");
+		//menu = new Menu(this);
 		getServer().getPluginManager().registerEvents(this, this);
+		if(!setupPermissions()){
+			this.logger.info("error");
+		}
 	}
+    private boolean setupPermissions() {
+        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        perms = rsp.getProvider();
+        boolean ret = perms != null;
+        return ret;
+    }
 	public void getHelp(Player p)
 	{
 		p.sendMessage(dred + "====" + dgreen + " Gentys version " + pdfFile.getVersion() + dred + "====");
@@ -116,7 +130,18 @@ public class Gentys extends JavaPlugin implements Listener{
 				}
 				else if (args[0].equalsIgnoreCase("help"))
 				{
-					getHelp(player);
+					if(perms.has(player, "gentys.cool")){
+						getHelp(player);
+					}
+					else if(player.isOp())
+					{
+						getHelp(player);
+					}
+					else
+					{
+						player.sendMessage("Tu neturi teises ivykdyti sios komandos.");
+					}
+				
 				}
 				else if (args[0].equalsIgnoreCase("list"))
 				{
