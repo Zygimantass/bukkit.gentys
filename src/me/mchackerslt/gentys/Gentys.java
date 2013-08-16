@@ -37,13 +37,13 @@ public class Gentys extends JavaPlugin implements Listener{
 	public static ChatColor dgreen = ChatColor.DARK_GREEN;
 	public static ChatColor green = ChatColor.GREEN;
 	public static ChatColor white = ChatColor.WHITE;
+	public static String version = "1.0";
+	public Join join = new Join();
+	public static Who who = new Who();
 	public Permission perms;
 	public PluginDescriptionFile pdfFile = this.getDescription();
 	
 	
-	public void onDisable() {
-		this.logger.info(pdfFile.getName() + " has been disabled.");
-	}
 	public void onEnable() {
 		//this.logger.info(pdfFile.getName() + " has been enabled.");
 		//menu = new Menu(this);
@@ -51,6 +51,10 @@ public class Gentys extends JavaPlugin implements Listener{
 		if(!setupPermissions()){
 			this.logger.info("error");
 		}
+	}
+	public void getGentys(Player p)
+	{
+		p.sendMessage(dred + "[Gentys]: " + dgreen + "Work In Progress.");
 	}
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
@@ -60,13 +64,16 @@ public class Gentys extends JavaPlugin implements Listener{
     }
 	public void getHelp(Player p)
 	{
-		p.sendMessage(dred + "====" + dgreen + " Gentys version " + pdfFile.getVersion() + dred + "====");
+		p.sendMessage(dred + "====" + dgreen + " Gentys version " + version + dred + "====");
 		p.sendMessage(dred + "/gentys: " + dgreen + "Rodo sita teksta");
 		p.sendMessage(dred + "/gentys help: " + dgreen + "Rodo sita teksta");
 		p.sendMessage(dred + "/gentys list: " + dgreen + "Parodo kokios gentys egzistuoja");
 		p.sendMessage(dred + "/gentys join: " + dgreen + "Su sia komanda gali pasirinkti genti. (Atsimink, genties pakeisti nebegalesi.)");
 	}
-	@SuppressWarnings("resource")
+	public void noPerms(Player p)
+	{
+		p.sendMessage("Tu neturi teises ivykdyti sios komandos.");
+	}
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		Player player = (Player) sender;
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -79,48 +86,17 @@ public class Gentys extends JavaPlugin implements Listener{
 			{
 				if(args[0].equalsIgnoreCase("join"))
 				{
-					BufferedReader br;
-					try {
-						br = new BufferedReader(new FileReader("/usr/1.6/plugins/Gentys/list.txt"));
-						String line;
-						while ((line = br.readLine()) != null) {
-						   String[] parts = line.split(":");
-						   String nick = parts[0];
-						   if (nick.equalsIgnoreCase(sender.toString().split("=")[1].split("}")[0]))
-						   {
-							   player.sendMessage("Tu jau esi genties narys.");
-							   return false;
-						   }
-						}
-						br.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					if(!join.check(sender.toString()))
+					{
+						return false;
 					}
-					
 					if(args[1].equalsIgnoreCase("indenai"))
 					{
-						player.sendMessage(dred + "[Gentys]: Tu tapai indënø genties nariu.");
-					    File log = new File("/usr/1.6/plugins/Gentys/list.txt");
-					    try{
-					    	PrintWriter out = new PrintWriter(new FileWriter(log, true));
-					    	out.append(sender.toString().split("=")[1].split("}")[0]+":indenai\n");
-					    	out.close();
-					    }catch(IOException e){
-					        e.printStackTrace();
-					    }
+						join.joinIndenai(player, perms, sender.toString());
 					}
 					else if (args[1].equalsIgnoreCase("baltai"))
 					{
-					    File log = new File("/usr/1.6/plugins/Gentys/list.txt");
-					    try{
-					    	PrintWriter out = new PrintWriter(new FileWriter(log, true));
-					    	out.append(sender.toString().split("=")[1].split("}")[0]+":baltai\n");
-					    	out.close();
-					    }catch(IOException e){
-					        e.printStackTrace();
-					    }
-						player.sendMessage(green + "[Gentys]: Tu tapai baltø genties nariu.");
+						join.joinBaltai(player, perms, sender.toString());
 					}
 					else
 					{
@@ -130,30 +106,37 @@ public class Gentys extends JavaPlugin implements Listener{
 				}
 				else if (args[0].equalsIgnoreCase("help"))
 				{
-					if(perms.has(player, "gentys.cool")){
-						getHelp(player);
-					}
-					else if(player.isOp())
-					{
-						getHelp(player);
-					}
-					else
-					{
-						player.sendMessage("Tu neturi teises ivykdyti sios komandos.");
-					}
-				
+					getHelp(player);
 				}
 				else if (args[0].equalsIgnoreCase("list"))
 				{
-					player.sendMessage(ChatColor.GOLD + "[Gentys]: Baltai, indenai, WIP.");
+					getGentys(player);
 				}
+				else if (args[0].equalsIgnoreCase("who"))
+				{
+					if(perms.has(player, "gentys.indenai"))
+					{
+						Who.whoIndenai(player);
+					}
+					else if (perms.has(player, "gentys.baltai"))
+					{
+						Who.whoBaltai(player);
+					}
+					else
+					{
+						noPerms(player);
+					}
+				}
+			
 				else
 				{
 					getHelp(player);
 				}
-			}
+		
+			}	
 		}
 		return false;
 	}
-
 }
+
+
