@@ -7,12 +7,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import com.massivecraft.factions.entity.Faction;
+import com.massivecraft.factions.entity.FactionColls;
+import com.massivecraft.factions.entity.UPlayer;
+
 public class Join { 
+	public String list = "/usr/1.6/plugins/Gentys/list.txt";
+	public void joinFac(Player player, String fac)
+	{
+		UPlayer uplayer = UPlayer.get(player);
+		Faction faction = FactionColls.get().getForUniverse("world").getByName(fac);
+		uplayer.setFaction(faction);
+	}
 	@SuppressWarnings("resource")
 	public boolean check(String s)
 	{
@@ -38,17 +50,11 @@ public class Join {
 	public void joinIndenai(Player p, Permission perms, String s)
 	{
 		p.sendMessage(ChatColor.DARK_RED + "[Gentys]: Tu tapai indënø genties nariu.");
-	    File log = new File("/usr/1.6/plugins/Gentys/list.txt");
-	    try{
-	    	PrintWriter out = new PrintWriter(new FileWriter(log, true));
-	    	out.append(s.toString().split("=")[1].split("}")[0]+":indenai\n");
-	    	out.close();
-	    }catch(IOException e){
-	        e.printStackTrace();
-	    }
+	    Failai.writeFile(list, s.toString().split("=")[1].split("}")[0]+":indenai\n");
 	    perms.playerAdd(p, "gentys.indenai");
 	    perms.playerAdd(p, "gentys.skills.indenai");
-	    perms.playerAddGroup(p, "indenai");		
+	    perms.playerAddGroup(p, "indenai");
+	    joinFac(p, "Indenai");
 	}
 	public void joinBaltai(Player p, Permission perms, String s)
 	{
@@ -64,5 +70,6 @@ public class Join {
 		perms.playerAdd(p, "gentys.baltai");
 		perms.playerAdd(p, "gentys.skills.baltai");
 		perms.playerAddGroup(p, "baltai");
+		joinFac(p, "Baltai");
 	}
 }
