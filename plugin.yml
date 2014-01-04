@@ -3,7 +3,9 @@ main: me.mchackerslt.gentys.Gentys
 version: 1.0
 description: >
              Epic plugin is gentys
-
 commands:
   gentys:
     description: Gentys are epic!
+  skills:
+    description: Skills!
+softdepend: [Factions]

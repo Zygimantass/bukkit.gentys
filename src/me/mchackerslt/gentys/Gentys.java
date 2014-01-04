@@ -1,11 +1,5 @@
 package me.mchackerslt.gentys;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import net.milkbowl.vault.permission.Permission;
@@ -15,9 +9,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -29,7 +25,7 @@ import com.massivecraft.factions.entity.UPlayer;
 @SuppressWarnings("unused")
 public class Gentys extends JavaPlugin implements Listener{
 	private final Logger logger = Logger.getLogger("Minecraft");
-	public static Gentys plugin;
+	public static Gentys plugin = (Gentys) Bukkit.getServer().getPluginManager().getPlugin("Gentys");
 	private Menu menu;
 	public static ChatColor dred = ChatColor.DARK_RED;
 	public static ChatColor red = ChatColor.RED;
@@ -47,19 +43,24 @@ public class Gentys extends JavaPlugin implements Listener{
 	
 	public void onEnable() {
 		//this.logger.info(pdfFile.getName() + " has been enabled.");
-		//menu = new Menu(this);
+		//menu = new Menu(this);	
+		getConfig().options().copyDefaults(false);
+		saveConfig();
 		getServer().getPluginManager().registerEvents(this, this);
 		Bukkit.getServer().getPluginManager().registerEvents(new Skills(), Bukkit.getServer().getPluginManager().getPlugin("Gentys"));
 		if(!setupPermissions()){
 			this.logger.info("error");
 		}
-        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+
+	
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             
             @Override
             public void run() {
                 Cooldown.handleCooldowns();
             }
         }, 1L, 1L);
+    	
 	}
 	public void getGentys(Player p)
 	{
@@ -83,6 +84,7 @@ public class Gentys extends JavaPlugin implements Listener{
 	{
 		p.sendMessage("Tu neturi teises ivykdyti sios komandos.");
 	}
+	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		Player player = (Player) sender;
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -112,6 +114,10 @@ public class Gentys extends JavaPlugin implements Listener{
 						player.sendMessage(dred + "[Gentys]: Tinkamas komandos naudojimas: /gentys join gentis");
 						player.sendMessage(dred + "[Gentys]: Kad paþiurëtum kokios gentys egzistuoja, paraðyk komanda: /gentys list");
 					}
+				}
+				else if (args[0].equalsIgnoreCase("test"))
+				{
+					player.sendMessage(dred + getConfig().getString("users.TheHacker.Test"));
 				}
 				else if (args[0].equalsIgnoreCase("help"))
 				{
@@ -157,10 +163,10 @@ public class Gentys extends JavaPlugin implements Listener{
 					if(args.length >= 2)
 					{
 						if (Material.getMaterial(args[1].toUpperCase()) == null) { Existing.ExistingMaterial(player); return false; }
-						if (!args[2].equalsIgnoreCase("fireball") && !args[2].equalsIgnoreCase("blink")) { Existing.ExistingSkills(player); return false; }
-						ifExists(player, args[1].toUpperCase());
-						Failai.writeFile("/usr/1.6/plugins/Gentys/bindskill.txt", player.getName() + ":" + args[1] + ":" + args[2] + "_SKILL\n");
-						
+						if (!args[2].equalsIgnoreCase("fireball") && !args[2].equalsIgnoreCase("blink") && !args[2].equalsIgnoreCase("water") && !args[2].equalsIgnoreCase("freeze")) { Existing.ExistingSkills(player); return false; }
+						if (ifExists(player, args[1].toUpperCase(), args[2])) { return false; }
+						getConfig().set("users."+player.getName()+"."+args[1], args[2]);
+						saveConfig();
 					}
 					else
 					{
@@ -175,49 +181,31 @@ public class Gentys extends JavaPlugin implements Listener{
 		}
 		return false;
 	}
-
-	public void ifExists(Player player, String mat)
+	public static Gentys getInst()
 	{
-		String nick;
-		String tool;
-		String skill;
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader("/usr/1.6/plugins/Gentys/bindskill.txt"));
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] parts = line.split(":");
-				nick = parts[0];
-				tool = parts[1];
-				skill = parts[2];
-				if (nick.equalsIgnoreCase(player.getName()) && tool.equalsIgnoreCase(mat))
-				{
-					File inputFile = new File("/usr/1.6/plugins/Gentys/bindskill.txt");
-					File tempFile = new File("/usr/1.6/plugins/Gentys/bindskilltemp.txt");
-
-					BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-					BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
-					String lineToRemove = line;
-					String currentLine;
-
-					while((currentLine = reader.readLine()) != null) {
-						// trim newline when comparing with lineToRemove
-						String trimmedLine = currentLine.trim();
-						if(trimmedLine.equals(lineToRemove)) continue;
-						writer.write(currentLine);
-					}
-					writer.close();
-					boolean successful = tempFile.renameTo(inputFile);
-					reader.close();
-				}
-			}
-			br.close();
+		return plugin;
+	}
+	public boolean ifExists(Player player, String mat, String skill)
+	{
+		if (getConfig().getString("users."+player.getName()+"."+mat) != null)
+		{
+			return true;
 		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(getConfig().getString("users."+player.getName()+"."+mat) == skill)
+		{
+			getConfig().set("users."+player.getName()+"."+mat, null);
+			saveConfig();
+			return false;
 		}
+		return false;
+	}
+	public boolean ifExists(Player player, String mat)
+	{
+		if (getConfig().getString("users."+player.getName()+"."+mat) == null)
+		{
+			return true;
+		}
+		return false;
 	}
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event){
@@ -228,6 +216,30 @@ public class Gentys extends JavaPlugin implements Listener{
             fPlayer.sendMessage(player.getName() + " has came online!");
        } 
     }
+	public boolean ifBinded(Player p, PlayerInteractEvent e)
+	{
+		/*if(p == null)
+		{
+			this.getServer().broadcastMessage("abcx");
+			return false;
+		}
+		else if (e == null)
+		{
+			Bukkit.getServer().broadcastMessage("abcc");
+			return false;
+		}
+		else if (getConfig().getString("users."+p.getName()+"."+e.getMaterial().toString().toUpperCase()) == null)
+		{
+			p.sendMessage("abc");
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+		*/
+		return true;
+	}
 }
 
 
